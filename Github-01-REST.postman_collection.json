@@ -1,0 +1,574 @@
+{
+	"info": {
+		"_postman_id": "3a5c18cd-67d3-4924-a41a-2b69d9259769",
+		"name": "Github-01-REST",
+		"description": "Github user scenario \"User can log in, get information, create and delete repositories, issues, pull requests\":\r\n1.Get user's info\r\n2.Get list of repositories\r\n3.Create repository\r\n4.Get created repository (check if existed)\r\n5.Get labels of repository\r\n6.Create issue of repository\r\n7.Get created issue of repository (check if existed)\r\n8.Get pull requests of repository\r\n9.Delete repository\r\n10.Get deleted repository (check if existed)",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Get user's info *R",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "c83339da-2dd3-4ea7-8e0c-2b656f24d3d1",
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"var jsonData = pm.response.json();\r",
+							"\r",
+							"pm.test(\"User \" + pm.environment.get(\"owner\") + \" has the same login: \" + jsonData.items[0].login)"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{basicURL}}/search/users?q={{owner}}",
+					"host": [
+						"{{basicURL}}"
+					],
+					"path": [
+						"search",
+						"users"
+					],
+					"query": [
+						{
+							"key": "q",
+							"value": "{{owner}}"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get list of repositories *R",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "83cee937-5308-46f2-85d5-02a2a75c10b3",
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"var jsonData = pm.response.json();\r",
+							"\r",
+							"for (var x in jsonData) {};\r",
+							"\r",
+							"pm.test(\"User \" + pm.environment.get(\"owner\") + \" has \" + (Number(x) + 1) + \" repositories\")"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{basicURL}}/users/:username/repos",
+					"host": [
+						"{{basicURL}}"
+					],
+					"path": [
+						"users",
+						":username",
+						"repos"
+					],
+					"variable": [
+						{
+							"key": "username",
+							"value": "{{owner}}"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create repository *R",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "15dcf97d-4c82-47b1-a93f-fda561215e9f",
+						"exec": [
+							"var randomNum = Math.random().toFixed(3) * 1000;\r",
+							"var repoNameVar = \"Repo-\" + randomNum;\r",
+							"pm.environment.set(\"repoName\", repoNameVar)"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"id": "2164b376-4223-4a92-aa73-8452d46a062b",
+						"exec": [
+							"pm.test(\"Status code is 201\", function () {\r",
+							"    pm.response.to.have.status(201);\r",
+							"});\r",
+							"\r",
+							"var jsonData = pm.response.json();\r",
+							"\r",
+							"pm.test(\"Repository \" + pm.environment.get(\"repoName\") + \" has been created\", function () {\r",
+							"    pm.expect(jsonData.name).to.eql(pm.environment.get(\"repoName\"))\r",
+							"})"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"name\": \"{{repoName}}\", //*\r\n    \"description\": \"This is your first repository\",\r\n    \"homepage\": \"https://github.com\",\r\n    \"private\": false,\r\n    \"has_issues\": true,\r\n    \"has_projects\": true,\r\n    \"has_wiki\": true\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{basicURL}}/user/repos",
+					"host": [
+						"{{basicURL}}"
+					],
+					"path": [
+						"user",
+						"repos"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get created repo *R",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "50f3ff31-6b04-408a-86f9-013aed9c8bfa",
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Repository \" + pm.environment.get(\"repoName\") + \" is existed\")"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{basicURL}}/repos/:owner/:repo",
+					"host": [
+						"{{basicURL}}"
+					],
+					"path": [
+						"repos",
+						":owner",
+						":repo"
+					],
+					"variable": [
+						{
+							"key": "owner",
+							"type": "string",
+							"value": "{{owner}}"
+						},
+						{
+							"key": "repo",
+							"type": "string",
+							"value": "{{repoName}}"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get labeis of repo *R",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "b30a69c5-d4ec-49f0-ad03-b03e32e6bde4",
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"var jsonData = pm.response.json();\r",
+							"\r",
+							"for (var x in jsonData) {};\r",
+							"\r",
+							"pm.test(\"Repository \" + pm.environment.get(\"repoName\") + \" has \" + (Number(x) + 1) + \" labels\")"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{basicURL}}/repos/:owner/:repo/labels",
+					"host": [
+						"{{basicURL}}"
+					],
+					"path": [
+						"repos",
+						":owner",
+						":repo",
+						"labels"
+					],
+					"variable": [
+						{
+							"key": "owner",
+							"value": "{{owner}}"
+						},
+						{
+							"key": "repo",
+							"value": "{{repoName}}"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create issue of repo *R",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "4cd9a57e-2613-4c59-b531-c65b1f9e795c",
+						"exec": [
+							"pm.test(\"Status code is 201\", function () {\r",
+							"    pm.response.to.have.status(201);\r",
+							"});\r",
+							"\r",
+							"var jsonData = pm.response.json();\r",
+							"\r",
+							"pm.environment.set(\"issueNumber\", jsonData.number);\r",
+							"\r",
+							"pm.test(\"In repository \" + pm.environment.get(\"repoName\") + \" has been created issue \" + jsonData.number + \".\" + jsonData.title + \" with label \" + jsonData.labels[0].name, function () {\r",
+							"    pm.expect(jsonData.labels[0].name).to.eql(pm.environment.get(\"labelName\"))\r",
+							"})"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "bd89aa30-1d79-4d25-a319-6a9ed7216836",
+						"exec": [
+							"var randomNum = Math.random().toFixed(3) * 1000;\r",
+							"var issueTitleVar = \"Issue-\" + randomNum;\r",
+							"pm.environment.set(\"issueTitle\", issueTitleVar)"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"title\": \"{{issueTitle}}\",\r\n    \"body\": \"I have a proposal for this - 3\",\r\n    \"labels\": [\r\n        \"{{labelName}}\"\r\n    ]\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{basicURL}}/repos/:owner/:repo/issues",
+					"host": [
+						"{{basicURL}}"
+					],
+					"path": [
+						"repos",
+						":owner",
+						":repo",
+						"issues"
+					],
+					"variable": [
+						{
+							"key": "owner",
+							"type": "string",
+							"value": "{{owner}}"
+						},
+						{
+							"key": "repo",
+							"type": "string",
+							"value": "{{repoName}}"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get created issue *R",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "65a643ba-b041-4a65-ba0b-3f9335e850a2",
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"var jsonData = pm.response.json();\r",
+							"\r",
+							"pm.test(\"Issue \" + pm.environment.get(\"issueNumber\") + \".\" + pm.environment.get(\"issueTitle\") + \" is existed in repository \" + pm.environment.get(\"repoName\"), function () {\r",
+							"    pm.expect(jsonData.title).to.eql(pm.environment.get(\"issueTitle\"))\r",
+							"})"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{basicURL}}/repos/:owner/:repo/issues/:issue_number",
+					"host": [
+						"{{basicURL}}"
+					],
+					"path": [
+						"repos",
+						":owner",
+						":repo",
+						"issues",
+						":issue_number"
+					],
+					"variable": [
+						{
+							"key": "owner",
+							"type": "string",
+							"value": "{{owner}}"
+						},
+						{
+							"key": "repo",
+							"type": "string",
+							"value": "{{repoName}}"
+						},
+						{
+							"key": "issue_number",
+							"value": "{{issueNumber}}"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get pull requests *R",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "ead0cc7f-938f-4c9c-93d7-22ae0f65ae95",
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"var jsonData = pm.response.json();\r",
+							"\r",
+							"if(jsonData.length == 0) {\r",
+							"    pm.test(\"There are no pull requests in repository \" + pm.environment.get(\"repoName\"))\r",
+							"} else {\r",
+							"    pm.test(\"Pull request \" + jsonData[0].title + \" is existed in repository \" + pm.environment.get(\"repoName\"))\r",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{basicURL}}/repos/:owner/:repo/pulls",
+					"host": [
+						"{{basicURL}}"
+					],
+					"path": [
+						"repos",
+						":owner",
+						":repo",
+						"pulls"
+					],
+					"variable": [
+						{
+							"key": "owner",
+							"value": "{{owner}}"
+						},
+						{
+							"key": "repo",
+							"value": "{{repoName}}"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Delete repo *R",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "e02e0e4a-0e25-4f62-bfb2-733e6d06c2fa",
+						"exec": [
+							"if (responseCode.code === 204) {\r",
+							"    pm.test(\"Status code is 204\", function () {\r",
+							"    pm.response.to.have.status(204);\r",
+							"});\r",
+							"    pm.test(\"Supposed, repository \" + pm.environment.get(\"repoName\") + \" has been deleted\", function () {\r",
+							"    pm.response.to.have.status(204);\r",
+							"})\r",
+							"} else {\r",
+							"    pm.test(\"Status code is 204\", function () {\r",
+							"    pm.response.to.have.status(204);\r",
+							"});\r",
+							"    pm.test(\"Repository \" + pm.environment.get(\"repoName\") + \" has not been found\", function () {\r",
+							"    pm.response.to.have.status(204);\r",
+							"})\r",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "{{basicURL}}/repos/:owner/:repo",
+					"host": [
+						"{{basicURL}}"
+					],
+					"path": [
+						"repos",
+						":owner",
+						":repo"
+					],
+					"variable": [
+						{
+							"key": "owner",
+							"type": "string",
+							"value": "{{owner}}"
+						},
+						{
+							"key": "repo",
+							"type": "string",
+							"value": "{{repoName}}"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get deleted repo *R",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "65ae897c-fc5d-461b-87cc-8fd933b9dece",
+						"exec": [
+							"pm.test(\"Status code is 404\", function () {\r",
+							"    pm.response.to.have.status(404);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Repository \" + pm.environment.get(\"repoName\") + \" does not exist\")"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{basicURL}}/repos/:owner/:repo",
+					"host": [
+						"{{basicURL}}"
+					],
+					"path": [
+						"repos",
+						":owner",
+						":repo"
+					],
+					"variable": [
+						{
+							"key": "owner",
+							"type": "string",
+							"value": "{{owner}}"
+						},
+						{
+							"key": "repo",
+							"type": "string",
+							"value": "{{repoName}}"
+						}
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{token}}",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"id": "088aef51-ab36-4980-b712-701e444bc352",
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"id": "36938c35-de36-4019-b1c3-43b1e1416b56",
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"protocolProfileBehavior": {}
+}
